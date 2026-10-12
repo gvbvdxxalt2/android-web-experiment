@@ -43,7 +43,7 @@
 #include "scsi/constants.h"
 #include "scsi/utils.h"
 
-#ifndef __sun__
+#ifdef EMSCRIPTEN
 #include <sys/ioctl.h>
 #endif
 
@@ -2088,12 +2088,17 @@ static int handle_aiocb_write_zeroes_unmap(void *opaque)
     return handle_aiocb_write_zeroes(aiocb);
 }
 
+
+#ifdef EMSCRIPTEN
+ssize_t copy_file_range(int a, off_t * b, int, off_t * c, size_t d, unsigned e)
+{
+    errno = ENOSYS;
+    return -1;
+}
+#else
 #ifndef HAVE_COPY_FILE_RANGE
-#if !defined(EMSCRIPTEN) && !defined(__GNU__)
-static
-#endif
-ssize_t copy_file_range(int in_fd, off_t *in_off, int out_fd,
-                        off_t *out_off, size_t len, unsigned int flags)
+static off_t copy_file_range(int in_fd, off_t *in_off, int out_fd,
+                             off_t *out_off, size_t len, unsigned int flags)
 {
 #ifdef __NR_copy_file_range
     return syscall(__NR_copy_file_range, in_fd, in_off, out_fd,
@@ -2103,6 +2108,7 @@ ssize_t copy_file_range(int in_fd, off_t *in_off, int out_fd,
     return -1;
 #endif
 }
+#endif
 #endif
 
 /*

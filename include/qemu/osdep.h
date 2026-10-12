@@ -27,6 +27,10 @@
 #ifndef QEMU_OSDEP_H
 #define QEMU_OSDEP_H
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #if !defined _FORTIFY_SOURCE && defined __OPTIMIZE__ && __OPTIMIZE__ && defined __linux__
 # define _FORTIFY_SOURCE 2
 #endif
@@ -148,6 +152,11 @@ QEMU_EXTERN_C int daemon(int, int);
 
 #ifdef CONFIG_IOVEC
 #include <sys/uio.h>
+#endif
+
+#if defined(EMSCRIPTEN)
+#include <sys/sysmacros.h>
+#include <sys/statfs.h>
 #endif
 
 #if defined(__linux__) && defined(__sparc__)
@@ -298,6 +307,7 @@ void QEMU_ERROR("code path is reachable")
 #ifndef WCOREDUMP
 #define WCOREDUMP(status) 0
 #endif
+#ifndef EMSCRIPTEN
 /*
  * We have a lot of unaudited code that may fail in strange ways, or
  * even be a security risk during migration, if you disable assertions
@@ -312,6 +322,7 @@ void QEMU_ERROR("code path is reachable")
 #endif
 #ifdef G_DISABLE_ASSERT
 #error building with G_DISABLE_ASSERT is not supported
+#endif
 #endif
 
 #ifndef OFF_MAX
@@ -667,7 +678,7 @@ int qemu_get_thread_id(void);
  */
 int qemu_kill_thread(int tid, int sig);
 
-#ifndef CONFIG_IOVEC
+#if !defined(CONFIG_IOVEC) && !defined(EMSCRIPTEN)
 struct iovec {
     void *iov_base;
     size_t iov_len;

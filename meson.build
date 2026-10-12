@@ -320,8 +320,14 @@ endif
 # Compiler flags #
 ##################
 
-if (cc.sizeof('void *') < 8) and (have_system or have_user)
-  error('QEMU emulator requires a 64-bit CPU host architecture. Only tools may be built for 32-bit.')
+# ORIGINAL:
+# if (cc.sizeof('void *') < 8) and (have_system or have_user)
+#   error('QEMU emulator requires a 64-bit CPU host architecture. Only tools may be built for 32-bit.')
+# endif
+
+# PATCHED FOR EMSCRIPTEN:
+if false and (cc.sizeof('void *') < 8) and (have_system or have_user)
+  error('QEMU emulator requires a 64-bit CPU host architecture.')
 endif
 
 foreach lang : all_languages
@@ -529,9 +535,12 @@ safe_stack_probe = '''
 if get_option('safe_stack') != not cc.compiles(safe_stack_probe)
   safe_stack_arg = get_option('safe_stack') ? '-fsanitize=safe-stack' : '-fno-sanitize=safe-stack'
   if get_option('safe_stack') != not cc.compiles(safe_stack_probe, args: safe_stack_arg)
-    error(get_option('safe_stack') \
-          ? 'SafeStack not supported by your compiler' \
-          : 'Cannot disable SafeStack')
+    # PATCHED FOR EMSCRIPTEN:
+    if false
+      error(get_option('safe_stack') \
+            ? 'SafeStack not supported by your compiler' \
+            : 'Cannot disable SafeStack')
+    endif
   endif
   qemu_cflags += safe_stack_arg
   qemu_ldflags += safe_stack_arg
@@ -1094,9 +1103,10 @@ if not cc.compiles('''
      QEMU_BUILD_BUG_ON(sizeof(size_t) != GLIB_SIZEOF_SIZE_T);
      return 0;
   }''', dependencies: glib_pc, args: glib_cflags)
-  error('''sizeof(size_t) doesn't match GLIB_SIZEOF_SIZE_T.
-        You probably need to set PKG_CONFIG_LIBDIR" to point
-        to the right pkg-config files for your build target.''')
+  # EMSCIPTEN TRICK
+  # error('''sizeof(size_t) doesn't match GLIB_SIZEOF_SIZE_T.
+  #      You probably need to set PKG_CONFIG_LIBDIR" to point
+  #      to the right pkg-config files for your build target.''')
 endif
 
 glib = declare_dependency(dependencies: [glib_pc, gmodule],
@@ -1622,9 +1632,11 @@ if not get_option('brlapi').auto() or have_system
 endif
 
 sdl = not_found
+# EMSCRIPTEN:
+sdl = declare_dependency(compile_args: ['-sUSE_SDL=2'], link_args: ['-sUSE_SDL=2'])
 if not get_option('sdl').auto() or have_system
-  sdl = dependency('sdl2', required: get_option('sdl'))
-  sdl_image = not_found
+  #sdl = dependency('sdl2', required: get_option('sdl'))
+  # sdl_image = not_found
 endif
 if sdl.found()
   # Some versions of SDL have problems with -Wundef
@@ -2205,6 +2217,11 @@ if get_option('fuse_lseek').allowed()
 endif
 
 have_libvduse = (host_os == 'linux')
+
+# PATCHED FOR EMSCRIPTEN:
+have_vduse = false
+have_vhost_user = false
+
 if get_option('libvduse').enabled()
     if host_os != 'linux'
         error('libvduse requires linux')
@@ -3474,8 +3491,8 @@ endif
 
 libvduse = not_found
 if have_libvduse
-  libvduse_proj = subproject('libvduse')
-  libvduse = libvduse_proj.get_variable('libvduse_dep')
+  # libvduse_proj = subproject('libvduse')
+  # libvduse = libvduse_proj.get_variable('libvduse_dep')
 endif
 
 #####################

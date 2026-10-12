@@ -37,6 +37,80 @@
 #include "system/runstate.h"
 #include "qemu/cutils.h"
 
+ssize_t readv(int fd, const struct iovec *iov, int iov_cnt)
+{
+    ssize_t total = 0;
+
+    for (int i = 0; i < iov_cnt; i++) {
+        ssize_t ret = read(fd, iov[i].iov_base, iov[i].iov_len);
+
+        if (ret < 0) {
+            return total ? total : ret;
+        }
+        total += ret;
+        if ((size_t)ret < iov[i].iov_len) {
+            break;
+        }
+    }
+    return total;
+}
+
+ssize_t writev(int fd, const struct iovec *iov, int iov_cnt)
+{
+    ssize_t total = 0;
+
+    for (int i = 0; i < iov_cnt; i++) {
+        ssize_t ret = write(fd, iov[i].iov_base, iov[i].iov_len);
+
+        if (ret < 0) {
+            return total ? total : ret;
+        }
+        total += ret;
+        if ((size_t)ret < iov[i].iov_len) {
+            break;
+        }
+    }
+    return total;
+}
+
+ssize_t preadv(int fd, const struct iovec *iov, int iov_cnt, off_t offset)
+{
+    ssize_t total = 0;
+
+    for (int i = 0; i < iov_cnt; i++) {
+        ssize_t ret = pread(fd, iov[i].iov_base, iov[i].iov_len, offset);
+
+        if (ret < 0) {
+            return total ? total : ret;
+        }
+        total += ret;
+        offset += ret;
+        if ((size_t)ret < iov[i].iov_len) {
+            break;
+        }
+    }
+    return total;
+}
+
+ssize_t pwritev(int fd, const struct iovec *iov, int iov_cnt, off_t offset)
+{
+    ssize_t total = 0;
+
+    for (int i = 0; i < iov_cnt; i++) {
+        ssize_t ret = pwrite(fd, iov[i].iov_base, iov[i].iov_len, offset);
+
+        if (ret < 0) {
+            return total ? total : ret;
+        }
+        total += ret;
+        offset += ret;
+        if ((size_t)ret < iov[i].iov_len) {
+            break;
+        }
+    }
+    return total;
+}
+
 void os_setup_post(void){}
 void os_set_line_buffering(void)
 {

@@ -205,7 +205,13 @@ typedef struct TCGv_ptr_d *TCGv_ptr;
 typedef struct TCGv_vec_d *TCGv_vec;
 typedef TCGv_ptr TCGv_env;
 
-#if __SIZEOF_POINTER__ == 4
+#if defined(COMPILING_PER_TARGET)
+#if TARGET_LONG_BITS == 64
+typedef TCGv_i64 TCGv_vaddr;
+#else
+typedef TCGv_i32 TCGv_vaddr;
+#endif
+#elif __SIZEOF_POINTER__ == 4
 typedef TCGv_i32 TCGv_vaddr;
 #elif __SIZEOF_POINTER__ == 8
 typedef TCGv_i64 TCGv_vaddr;

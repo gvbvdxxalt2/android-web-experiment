@@ -8,17 +8,6 @@
  *
  * This work is licensed under the terms of the GNU GPL, version 2 or later.
  * See the COPYING file in the top-level directory.
- *
- */
-
-/*
- * Note that a wake-up can also be caused by common futex usage patterns in
- * unrelated code that happened to have previously used the futex word's
- * memory location (e.g., typical futex-based implementations of Pthreads
- * mutexes can cause this under some conditions).  Therefore, qemu_futex_wait()
- * callers should always conservatively assume that it is a spurious wake-up,
- * and use the futex word's value (i.e., the user-space synchronization scheme)
- * to decide whether to continue to block or not.
  */
 
 #ifndef QEMU_FUTEX_H
@@ -26,7 +15,8 @@
 
 #define HAVE_FUTEX
 
-#ifdef CONFIG_LINUX
+/* Exclude Linux futex implementation when compiling with Emscripten */
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #include <sys/syscall.h>
 #include <linux/futex.h>
 

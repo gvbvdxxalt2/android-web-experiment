@@ -1020,6 +1020,11 @@ if test -z "$ninja"; then
     fi
 fi
 
+# Emscripten override:
+if [ "$cpu" = "wasm32" ] || [ -n "$EMSCRIPTEN" ]; then
+    host_os="linux"
+fi
+
 if test "$host_os" = "bogus"; then
     # Now that we know that we're not printing the help and that
     # the compiler works (so the results of the check_defines we used

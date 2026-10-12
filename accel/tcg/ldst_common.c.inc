@@ -16,6 +16,9 @@ tcg_target_ulong helper_ldub_mmu(CPUArchState *env, uint64_t addr,
                                  MemOpIdx oi, uintptr_t retaddr)
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_8);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
     return do_ld1_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
 }
 
@@ -23,6 +26,10 @@ tcg_target_ulong helper_lduw_mmu(CPUArchState *env, uint64_t addr,
                                  MemOpIdx oi, uintptr_t retaddr)
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_16);
+    tcg_target_ulong res = do_ld2_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
     return do_ld2_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
 }
 
@@ -30,14 +37,22 @@ tcg_target_ulong helper_ldul_mmu(CPUArchState *env, uint64_t addr,
                                  MemOpIdx oi, uintptr_t retaddr)
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_32);
-    return do_ld4_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
+    tcg_target_ulong res = do_ld4_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
+    return res;
 }
 
 uint64_t helper_ldq_mmu(CPUArchState *env, uint64_t addr,
                         MemOpIdx oi, uintptr_t retaddr)
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_64);
-    return do_ld8_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
+    uint64_t res = do_ld8_mmu(env_cpu(env), addr, oi, retaddr, MMU_DATA_LOAD);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
+    return res;
 }
 
 /*
@@ -67,7 +82,11 @@ Int128 helper_ld16_mmu(CPUArchState *env, uint64_t addr,
                        MemOpIdx oi, uintptr_t retaddr)
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_128);
-    return do_ld16_mmu(env_cpu(env), addr, oi, retaddr);
+    Int128 res = do_ld16_mmu(env_cpu(env), addr, oi, retaddr);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
+    return res;
 }
 
 Int128 helper_ld_i128(CPUArchState *env, uint64_t addr, uint32_t oi)
@@ -84,6 +103,9 @@ void helper_stb_mmu(CPUArchState *env, uint64_t addr, uint32_t val,
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_8);
     do_st1_mmu(env_cpu(env), addr, val, oi, ra);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 void helper_stw_mmu(CPUArchState *env, uint64_t addr, uint32_t val,
@@ -91,6 +113,9 @@ void helper_stw_mmu(CPUArchState *env, uint64_t addr, uint32_t val,
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_16);
     do_st2_mmu(env_cpu(env), addr, val, oi, retaddr);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 void helper_stl_mmu(CPUArchState *env, uint64_t addr, uint32_t val,
@@ -98,6 +123,9 @@ void helper_stl_mmu(CPUArchState *env, uint64_t addr, uint32_t val,
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_32);
     do_st4_mmu(env_cpu(env), addr, val, oi, retaddr);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 void helper_stq_mmu(CPUArchState *env, uint64_t addr, uint64_t val,
@@ -105,6 +133,9 @@ void helper_stq_mmu(CPUArchState *env, uint64_t addr, uint64_t val,
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_64);
     do_st8_mmu(env_cpu(env), addr, val, oi, retaddr);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 void helper_st16_mmu(CPUArchState *env, uint64_t addr, Int128 val,
@@ -112,11 +143,17 @@ void helper_st16_mmu(CPUArchState *env, uint64_t addr, Int128 val,
 {
     tcg_debug_assert((get_memop(oi) & MO_SIZE) == MO_128);
     do_st16_mmu(env_cpu(env), addr, val, oi, retaddr);
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 void helper_st_i128(CPUArchState *env, uint64_t addr, Int128 val, MemOpIdx oi)
 {
     helper_st16_mmu(env, addr, val, oi, GETPC());
+#if defined(EMSCRIPTEN) && !defined(CONFIG_TCG_INTERPRETER)
+    set_done_flag();
+#endif
 }
 
 /*
