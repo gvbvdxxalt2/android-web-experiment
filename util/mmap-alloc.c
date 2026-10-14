@@ -10,7 +10,7 @@
  * later.  See the COPYING file in the top-level directory.
  */
 
-#ifdef CONFIG_LINUX
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #include <linux/mman.h>
 #else  /* !CONFIG_LINUX */
 #define MAP_SYNC              0x0
@@ -25,14 +25,14 @@
 
 #define HUGETLBFS_MAGIC       0x958458f6
 
-#ifdef CONFIG_LINUX
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #include <sys/vfs.h>
 #include <linux/magic.h>
 #endif
 
 QemuFsType qemu_fd_getfs(int fd)
 {
-#ifdef CONFIG_LINUX
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
     struct statfs fs;
     int ret;
 
@@ -59,7 +59,7 @@ QemuFsType qemu_fd_getfs(int fd)
 
 size_t qemu_fd_getpagesize(int fd)
 {
-#ifdef CONFIG_LINUX
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
     struct statfs fs;
     int ret;
 
@@ -185,9 +185,10 @@ static void *mmap_activate(void *ptr, size_t size, int fd,
                            uint32_t qemu_map_flags, off_t map_offset)
 {
 #if defined(EMSCRIPTEN)
-    void *ptr;
-    ptr = mmap_activate(0, size + align, fd, qemu_map_flags, map_offset);
-    return (void *)QEMU_ALIGN_UP((uintptr_t)ptr, align);
+    if (ptr) {
+        return ptr;
+    }
+    return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #else
     const bool noreserve = qemu_map_flags & QEMU_MAP_NORESERVE;
     const bool readonly = qemu_map_flags & QEMU_MAP_READONLY;
@@ -237,6 +238,7 @@ static void *mmap_activate(void *ptr, size_t size, int fd,
         activated_ptr = mmap(ptr, size, prot, flags, fd, map_offset);
     }
     return activated_ptr;
+#endif
 }
 
 static inline size_t mmap_guard_pagesize(int fd)

@@ -5,6 +5,9 @@
  */
 
 #include "qemu/osdep.h"
+
+#if !defined(__EMSCRIPTEN__)
+
 #include "qapi/qmp/qerror.h"
 #include "pci.h"
 #include "pci-quirks.h"
@@ -23,3 +26,5 @@ void vfio_igd_legacy_rom_quirk(VFIOPCIDevice *vdev)
 {
     return;
 }
+
+#endif

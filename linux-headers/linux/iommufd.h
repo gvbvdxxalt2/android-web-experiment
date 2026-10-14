@@ -4,6 +4,7 @@
 #ifndef _IOMMUFD_H
 #define _IOMMUFD_H
 
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #include <linux/ioctl.h>
 #include <linux/types.h>
 
@@ -1390,4 +1391,5 @@ struct iommu_hw_queue_alloc {
 	__aligned_u64 length;
 };
 #define IOMMU_HW_QUEUE_ALLOC _IO(IOMMUFD_TYPE, IOMMUFD_CMD_HW_QUEUE_ALLOC)
+#endif
 #endif

@@ -130,6 +130,7 @@ QEMU_EXTERN_C int daemon(int, int);
 #include <getopt.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+//#include <sys/uio.h>
 #include <assert.h>
 /* setjmp must be declared before system/os-win32.h
  * because it is redefined there. */
@@ -150,9 +151,9 @@ QEMU_EXTERN_C int daemon(int, int);
  */
 #undef FSCALE
 
-#ifdef CONFIG_IOVEC
+//#ifdef CONFIG_IOVEC
 #include <sys/uio.h>
-#endif
+//#endif
 
 #if defined(EMSCRIPTEN)
 #include <sys/sysmacros.h>
@@ -886,4 +887,36 @@ static inline int platform_does_not_support_system(const char *command)
 }
 #endif
 
+#endif
+/*
+#if defined(__EMSCRIPTEN__)
+#ifndef HAVE_PREADV
+static inline ssize_t preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset)
+{
+    if (lseek(fd, offset, SEEK_SET) == (off_t)-1) {
+        return -1;
+    }
+    return readv(fd, iov, iovcnt);
+}
+#endif
+
+#ifndef HAVE_PWRITEV
+static inline ssize_t pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset)
+{
+    if (lseek(fd, offset, SEEK_SET) == (off_t)-1) {
+        return -1;
+    }
+    return writev(fd, iov, iovcnt);
+}
+#endif
+#endif
+*/
+
+#if defined(__EMSCRIPTEN__)
+#ifndef HAVE_PREADV
+#define HAVE_PREADV 1
+#endif
+#ifndef HAVE_PWRITEV
+#define HAVE_PWRITEV 1
+#endif
 #endif

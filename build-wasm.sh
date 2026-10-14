@@ -43,6 +43,11 @@ export LDFLAGS="-mbulk-memory -DEMSCRIPTEN -sASYNCIFY -sUSE_SDL=2 -sUSE_ZLIB=1 -
   --enable-fdt=internal \
   --enable-pixman \
   --disable-linux-user \
+  --disable-linux-aio \
+  --disable-linux-io-uring \
+  --disable-kvm \
+  --disable-xen \
+  --disable-libiscsi \
   --disable-tools \
   --disable-docs \
   --disable-gcrypt \

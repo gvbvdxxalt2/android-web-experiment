@@ -27,7 +27,9 @@
 #include "trace.h"
 #include "qapi/clone-visitor.h"
 #ifdef CONFIG_LINUX
+#ifndef __EMSCRIPTEN__
 #include <linux/errqueue.h>
+#endif
 #include <sys/socket.h>
 
 #if (defined(MSG_ZEROCOPY) && defined(SO_ZEROCOPY))
@@ -35,9 +37,13 @@
 #endif
 #endif
 
+#ifdef __EMSCRIPTEN__
+#undef QEMU_MSG_ZEROCOPY
+#endif
+
 #define SOCKET_MAX_FDS 16
 
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
 static int qio_channel_socket_flush_internal(QIOChannel *ioc,
                                              bool block,
                                              Error **errp);
@@ -183,7 +189,7 @@ int qio_channel_socket_connect_sync(QIOChannelSocket *ioc,
         return -1;
     }
 
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
     int ret, v = 1;
     ret = setsockopt(fd, SOL_SOCKET, SO_ZEROCOPY, &v, sizeof(v));
     if (ret == 0) {
@@ -625,7 +631,7 @@ static ssize_t qio_channel_socket_writev(QIOChannel *ioc,
     size_t fdsize = sizeof(int) * nfds;
     struct cmsghdr *cmsg;
     int sflags = 0;
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
     bool blocking = sioc->blocking;
     bool zerocopy_flushed_once = false;
 #endif
@@ -654,7 +660,7 @@ static ssize_t qio_channel_socket_writev(QIOChannel *ioc,
     }
 
     if (flags & QIO_CHANNEL_WRITE_FLAG_ZERO_COPY) {
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
         sflags = MSG_ZEROCOPY;
 #else
         /*
@@ -673,7 +679,7 @@ static ssize_t qio_channel_socket_writev(QIOChannel *ioc,
             return QIO_CHANNEL_ERR_BLOCK;
         case EINTR:
             goto retry;
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
         case ENOBUFS:
             if (flags & QIO_CHANNEL_WRITE_FLAG_ZERO_COPY) {
                 /**
@@ -804,7 +810,7 @@ static ssize_t qio_channel_socket_writev(QIOChannel *ioc,
 #endif /* WIN32 */
 
 
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
 static int qio_channel_socket_flush_internal(QIOChannel *ioc,
                                              bool block,
                                              Error **errp)
@@ -1076,7 +1082,7 @@ static void qio_channel_socket_class_init(ObjectClass *klass,
     ioc_klass->io_set_delay = qio_channel_socket_set_delay;
     ioc_klass->io_create_watch = qio_channel_socket_create_watch;
     ioc_klass->io_set_aio_fd_handler = qio_channel_socket_set_aio_fd_handler;
-#ifdef QEMU_MSG_ZEROCOPY
+#if defined(QEMU_MSG_ZEROCOPY) && !defined(__EMSCRIPTEN_)
     ioc_klass->io_flush = qio_channel_socket_flush;
 #endif
     ioc_klass->io_peerpid = qio_channel_socket_get_peerpid;

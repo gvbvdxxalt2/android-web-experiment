@@ -105,9 +105,9 @@ if have_block
     util_ss.add(files('filemonitor-stub.c'))
   endif
   if host_os == 'linux'
-    util_ss.add(files('vhost-user-server.c'), vhost_user)
-    util_ss.add(files('vfio-helpers.c'))
-    util_ss.add(files('chardev_open.c'))
+    # util_ss.add(files('vhost-user-server.c'), vhost_user)
+    # util_ss.add(files('vfio-helpers.c'))
+    # util_ss.add(files('chardev_open.c'))
   endif
   util_ss.add(files('yank.c'))
 endif

@@ -113,7 +113,7 @@ void postcopy_thread_create(MigrationIncomingState *mis,
 #include <sys/syscall.h>
 #endif
 
-#if defined(__linux__) && defined(__NR_userfaultfd) && defined(CONFIG_EVENTFD)
+#if defined(__linux__) && defined(__NR_userfaultfd) && defined(CONFIG_EVENTFD) && !defined(__EMSCRIPTEN__)
 #include <sys/eventfd.h>
 #include <linux/userfaultfd.h>
 

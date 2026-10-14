@@ -13,6 +13,7 @@
 #ifndef USERFAULTFD_H
 #define USERFAULTFD_H
 
+#ifndef EMSCRIPTEN
 #ifdef CONFIG_LINUX
 
 #include "exec/hwaddr.h"
@@ -41,5 +42,6 @@ int uffd_wakeup(int uffd_fd, void *addr, uint64_t length);
 int uffd_read_events(int uffd_fd, struct uffd_msg *msgs, int count);
 
 #endif /* CONFIG_LINUX */
+#endif
 
 #endif /* USERFAULTFD_H */

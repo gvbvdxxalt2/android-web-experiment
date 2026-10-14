@@ -11,6 +11,9 @@
  */
 
 #include "qemu/osdep.h"
+
+#if !defined(__EMSCRIPTEN__)
+
 #include "qemu/bitops.h"
 #include "qemu/error-report.h"
 #include "qemu/userfaultfd.h"
@@ -358,3 +361,68 @@ int uffd_read_events(int uffd_fd, struct uffd_msg *msgs, int count)
 
     return (int) (res / sizeof(struct uffd_msg));
 }
+
+#else
+
+/* Emscripten / WebAssembly fallback stubs */
+#include "qemu/userfaultfd.h"
+
+int uffd_open(int flags)
+{
+    return -1;
+}
+
+int uffd_query_features(uint64_t *features)
+{
+    return -1;
+}
+
+int uffd_create_fd(uint64_t features, bool non_blocking)
+{
+    return -1;
+}
+
+void uffd_close_fd(int uffd_fd)
+{
+
+}
+
+int uffd_register_memory(int uffd_fd, void *addr, uint64_t length,
+        uint64_t mode, uint64_t *ioctls)
+{
+    return -1;
+}
+
+int uffd_unregister_memory(int uffd_fd, void *addr, uint64_t length)
+{
+    return -1;
+}
+
+int uffd_change_protection(int uffd_fd, void *addr, uint64_t length,
+        bool wp, bool dont_wake)
+{
+    return -1;
+}
+
+int uffd_copy_page(int uffd_fd, void *dst_addr, void *src_addr,
+        uint64_t length, bool dont_wake)
+{
+    return -1;
+}
+
+int uffd_zero_page(int uffd_fd, void *addr, uint64_t length, bool dont_wake)
+{
+    return -1;
+}
+
+int uffd_wakeup(int uffd_fd, void *addr, uint64_t length)
+{
+    return -1;
+}
+
+int uffd_read_events(int uffd_fd, struct uffd_msg *msgs, int count)
+{
+    return -1;
+}
+
+#endif

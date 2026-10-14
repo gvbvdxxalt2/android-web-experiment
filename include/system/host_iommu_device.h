@@ -18,8 +18,12 @@
 #include "linux/iommufd.h"
 
 typedef union VendorCaps {
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
     struct iommu_hw_info_vtd vtd;
     struct iommu_hw_info_arm_smmuv3 smmuv3;
+#else
+    uint64_t dummy;
+#endif
 } VendorCaps;
 
 /**

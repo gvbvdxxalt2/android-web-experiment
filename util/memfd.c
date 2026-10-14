@@ -32,6 +32,8 @@
 #include "qemu/memfd.h"
 #include "qemu/host-utils.h"
 
+#if !defined(__EMSCRIPTEN__)
+
 #if defined CONFIG_LINUX && !defined CONFIG_MEMFD
 #include <sys/syscall.h>
 #include <asm/unistd.h>
@@ -219,3 +221,26 @@ bool qemu_memfd_check(unsigned int flags)
 
     return false;
 }
+
+#else
+
+//Dummy implementation for emscripten.
+#include "qemu/memfd.h"
+
+int qemu_memfd_create(const char *name, size_t size, bool hugetlb,
+                      uint64_t hugetlbsize, unsigned int seals, Error **errp)
+{
+    return -1;
+}
+
+bool qemu_memfd_alloc_check(void)
+{
+    return false;
+}
+
+bool qemu_memfd_check(unsigned int flags)
+{
+    return false;
+}
+
+#endif

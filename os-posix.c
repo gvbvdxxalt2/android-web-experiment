@@ -35,7 +35,7 @@
 #include "system/runstate.h"
 #include "qemu/cutils.h"
 
-#ifdef CONFIG_LINUX
+#if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #include <sys/prctl.h>
 #endif
 
@@ -68,6 +68,7 @@ void os_setup_signal_handling(void)
 
 void os_set_proc_name(const char *s)
 {
+    #if defined(CONFIG_LINUX) && !defined(__EMSCRIPTEN__)
 #if defined(PR_SET_NAME)
     char name[16];
     if (!s)
@@ -82,6 +83,10 @@ void os_set_proc_name(const char *s)
 #else
     error_report("Change of process name not supported by your OS");
     exit(1);
+#endif
+#else
+    /* No-op under WebAssembly/Emscripten */
+    (void)s;
 #endif
 }
 
@@ -205,8 +210,11 @@ bool is_daemonized(void)
     return daemonize;
 }
 
+#if !defined(__EMSCRIPTEN__)
+
 int os_set_daemonize(bool d)
 {
+
     daemonize = d;
     return 0;
 }
@@ -258,6 +266,8 @@ void os_daemonize(void)
         signal(SIGTTIN, SIG_IGN);
     }
 }
+
+#endif
 
 void os_setup_limits(void)
 {
